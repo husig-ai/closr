@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closr — A Real Estate Operating Engine, Run For You</title>
+<meta name="description" content="Closr is a purpose-built CRM and lead-scoring engine for real estate agents, operated by a concierge team so you never touch the busywork.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  /* ============ TOKENS ============ */
+  :root{
+    --paper:      #F6F7F9;
+    --paper-deep: #EEF1F4;
+    --line:       #DCE2E8;
+    --line-soft:  #E9ECF0;
+    --ink:        #16212C;
+    --ink-soft:   #5B6675;
+    --ink-faint:  #93A0AC;
+    --blue:       #1D7FC3;
+    --blue-deep:  #123A56;
+    --blue-soft:  #E7F1FA;
+    --orange:     #FF8800;
+    --orange-deep:#C96600;
+    --orange-soft:#FFF1DF;
+    --white:      #FFFFFF;
+    --radius:     6px;
+    --radius-sm:  3px;
+    --maxw:       1180px;
+    --shadow:     0 1px 2px rgba(18,41,61,0.04), 0 8px 24px rgba(18,41,61,0.05);
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* faint blueprint grid texture */
+  .grid-bg{
+    position:relative;
+  }
+  .grid-bg::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(29,127,195,0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29,127,195,0.055) 1px, transparent 1px);
+    background-size:42px 42px;
+    pointer-events:none;
+    mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+  }
+
+  h1,h2,h3,.disp{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800;
+    letter-spacing:0.002em;
+    text-transform:none;
+    color:var(--blue-deep);
+    line-height:0.98;
+  }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--orange-deep);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:18px; height:2px;
+    background:var(--orange);
+    display:inline-block;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 32px; }
+
+  /* corner-bracket decoration, used on callouts */
+  .bracket{ position:relative; }
+  .bracket::before, .bracket::after{
+    content:"";
+    position:absolute;
+    width:16px; height:16px;
+    border:2px solid var(--orange);
+  }
+  .bracket::before{ top:-1px; left:-1px; border-right:none; border-bottom:none; }
+  .bracket::after{ bottom:-1px; right:-1px; border-left:none; border-top:none; }
+
+  /* ============ NAV ============ */
+  nav{
+    position:sticky; top:0; z-index:100;
+    background:rgba(246,247,249,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:var(--maxw); margin:0 auto; padding:0 32px;
+    height:68px;
+    display:flex; align-items:center; gap:36px;
+  }
+  .nav-logo{ display:flex; align-items:center; gap:9px; margin-right:auto; }
+  .nav-logo img{ height:26px; width:auto; display:block; }
+  .nav-logo .wordmark{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:21px;
+    letter-spacing:0.03em; color:var(--orange); line-height:1;
+  }
+  .nav-links{ display:flex; align-items:center; gap:30px; list-style:none; }
+  .nav-links a{
+    font-size:14px; font-weight:500; color:var(--ink-soft);
+    transition:color .15s;
+    white-space:nowrap;
+  }
+  .nav-links a:hover{ color:var(--blue-deep); }
+  .nav-cta{
+    background:var(--orange);
+    color:#fff !important;
+    font-weight:600 !important;
+    padding:10px 18px;
+    border-radius:var(--radius-sm);
+    font-size:13.5px !important;
+  }
+  .nav-cta:hover{ background:var(--orange-deep); }
+  .nav-toggle{ display:none; }
+
+  /* ============ HERO ============ */
+  .hero{
+    padding:88px 0 60px;
+    position:relative;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap:56px;
+    align-items:center;
+  }
+  .hero h1{
+    font-size:clamp(42px, 5.4vw, 68px);
+    margin:18px 0 22px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:var(--orange);
+  }
+  .hero-sub{
+    font-size:17.5px;
+    color:var(--ink-soft);
+    max-width:520px;
+    margin-bottom:32px;
+    line-height:1.65;
+  }
+  .hero-actions{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:34px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600; font-size:14.5px;
+    padding:13px 22px;
+    border-radius:var(--radius-sm);
+    transition:all .15s;
+    border:1.5px solid transparent;
+  }
+  .btn-primary{ background:var(--blue-deep); color:#fff; }
+  .btn-primary:hover{ background:#0d2c41; }
+  .btn-ghost{ border-color:var(--line); color:var(--ink); background:var(--white); }
+  .btn-ghost:hover{ border-color:var(--blue); color:var(--blue-deep); }
+
+  .hero-chips{ display:flex; gap:10px; flex-wrap:wrap; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px; font-weight:500;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    background:var(--white);
+    padding:6px 11px;
+    border-radius:20px;
+  }
+
+  .hero-exhibit{ position:relative; }
+  .exhibit-frame{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .exhibit-frame img{ display:block; width:100%; height:auto; }
+  .exhibit-cap{
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 14px;
+    padding:10px 16px;
+    border-top:1px dashed var(--line);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+  .exhibit-cap b{ color:var(--blue-deep); font-weight:600; }
+
+  /* ============ STAT / PROBLEM STRIP ============ */
+  .problem{
+    background:var(--blue-deep);
+    color:#fff;
+    padding:64px 0 56px;
+  }
+  .problem .eyebrow{ color:var(--orange); }
+  .problem .eyebrow::before{ background:var(--orange); }
+  .problem h2{ color:#fff; font-size:clamp(28px,3.4vw,38px); max-width:740px; margin:16px 0 8px;}
+  .problem-sub{ color:#A9C0D2; max-width:640px; font-size:15.5px; margin-bottom:40px; }
+  .stat-row{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:0;
+    border-top:1px solid rgba(255,255,255,0.16);
+  }
+  .stat{
+    padding:26px 22px 0;
+    border-right:1px solid rgba(255,255,255,0.16);
+    position:relative;
+  }
+  .stat:last-child{ border-right:none; }
+  .stat::before{
+    content:"";
+    position:absolute; top:0; left:22px;
+    width:1px; height:14px;
+    background:var(--orange);
+  }
+  .stat-num{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:800; font-size:52px; color:#fff; line-height:1;
+  }
+  .stat-label{ font-size:13px; color:#A9C0D2; margin-top:8px; max-width:220px; line-height:1.5;}
+  .stat-note{
+    margin-top:30px; padding-top:24px; border-top:1px dashed rgba(255,255,255,0.2);
+    font-size:13.5px; color:#A9C0D2; display:flex; gap:10px; align-items:baseline;
+  }
+  .stat-note b{ color:var(--orange); font-family:'IBM Plex Mono',monospace; }
+
+  /* ============ SECTION shared ============ */
+  section.block{ padding:96px 0; }
+  .block-head{ max-width:680px; margin-bottom:48px; }
+  .block-head h2{ font-size:clamp(32px,3.6vw,44px); margin:14px 0 14px; }
+  .block-head p{ color:var(--ink-soft); font-size:16px; line-height:1.7; }
+  .alt{ background:var(--white); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+
+  /* ============ FEATURES ============ */
+  .feat-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .feat-card{
+    background:var(--white);
+    padding:30px 26px;
+  }
+  .feat-icon{
+    width:38px; height:38px;
+    margin-bottom:18px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .feat-card h3{
+    font-family:'IBM Plex Sans', sans-serif; font-weight:700;
+    color:var(--ink); font-size:16px; margin-bottom:8px;
+  }
+  .feat-card p{ color:var(--ink-soft); font-size:14px; line-height:1.65; }
+  .feat-tag{
+    display:inline-block; margin-top:14px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:500;
+    color:var(--blue); background:var(--blue-soft);
+    padding:3px 8px; border-radius:3px; letter-spacing:0.04em;
+  }
+
+  .showcase{
+    display:grid; grid-template-columns:1fr 1fr; gap:28px;
+    margin-top:56px;
+  }
+  .funnel-block{
+    margin-top:56px; background:var(--white); border:1px solid var(--line); border-radius:var(--radius);
+    padding:30px 36px;
+  }
+  .funnel-block svg{ width:100%; height:auto; display:block; }
+
+  /* ============ SCORING ============ */
+  .scoring-grid{
+    display:grid; grid-template-columns:1.15fr 0.85fr; gap:60px; align-items:start;
+  }
+  .dim-list{ display:flex; flex-direction:column; gap:0; margin-top:28px; border-top:1px solid var(--line);}
+  .dim-row{
+    display:grid; grid-template-columns:32px 1fr; gap:16px;
+    padding:18px 0; border-bottom:1px solid var(--line);
+  }
+  .dim-letter{
+    font-family:'Big Shoulders Display',sans-serif; font-weight:800;
+    font-size:24px; color:var(--orange);
+  }
+  .dim-row h4{ font-size:14.5px; font-weight:700; color:var(--ink); margin-bottom:3px;}
+  .dim-row p{ font-size:13.5px; color:var(--ink-soft); line-height:1.55; }
+
+  .tier-scale{ margin-top:36px; }
+  .tier-bar{
+    display:flex; height:14px; border-radius:8px; overflow:hidden; border:1px solid var(--line);
+  }
+  .tier-seg{ flex:1; }
+  .tier-cold{ background:#CBD6DF; }
+  .tier-cool{ background:#9FC6E8; }
+  .tier-warm{ background:#FFC069; }
+  .tier-hot{ background:var(--orange); }
+  .tier-labels{ display:flex; margin-top:10px; }
+  .tier-labels span{
+    flex:1; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft);
+  }
+  .tier-labels span b{ color:var(--ink); display:block; font-size:12.5px; margin-bottom:2px; }
+
+  .scoring-note{
+    margin-top:30px; padding:18px 20px;
+    background:var(--orange-soft); border-radius:var(--radius-sm);
+    font-size:13.5px; color:#7A4A00; line-height:1.6;
+  }
+
+  /* ============ PIPELINE ============ */
+  .track{
+    display:flex; align-items:flex-start; gap:0;
+    margin-top:50px; overflow-x:auto; padding-bottom:8px;
+  }
+  .track-node{
+    flex:1; min-width:120px; position:relative; padding-top:26px;
+  }
+  .track-node::before{
+    content:""; position:absolute; top:9px; left:0; right:0; height:2px;
+    background:var(--line);
+  }
+  .track-node:first-child::before{ left:50%; }
+  .track-node:last-child::before{ right:50%; }
+  .track-dot{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:18px; height:18px; border-radius:50%;
+    background:var(--white); border:3px solid var(--blue);
+    z-index:2;
+  }
+  .track-node.is-end .track-dot{ border-color:var(--orange); background:var(--orange); }
+  .track-num{
+    text-align:center; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-faint);
+    margin-bottom:6px;
+  }
+  .track-label{
+    text-align:center; font-size:13px; font-weight:600; color:var(--ink); padding:0 6px;
+  }
+  .track-exits{
+    display:flex; gap:14px; margin-top:30px; flex-wrap:wrap;
+  }
+  .exit-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft);
+    border:1px dashed var(--line-soft); padding:8px 14px; border-radius:20px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .exit-tag::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--ink-faint); }
+
+  /* ============ HOW IT WORKS / CONCIERGE ============ */
+  .concierge-intro{ text-align:center; max-width:700px; margin:0 auto 12px; }
+  .concierge-diagram{ margin:50px auto 10px; max-width:880px; }
+  .concierge-diagram svg{ width:100%; height:auto; display:block; }
+
+  .division-table{
+    width:100%; border-collapse:collapse; margin-top:14px;
+    font-size:14px;
+  }
+  .division-table th, .division-table td{
+    padding:16px 18px; text-align:left; border-bottom:1px solid var(--line);
+  }
+  .division-table thead th{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:500;
+    border-bottom:2px solid var(--ink);
+  }
+  .division-table td:first-child, .division-table th:first-child{ color:var(--ink); font-weight:600; }
+  .division-table td.yes{ color:var(--blue-deep); font-weight:600; }
+  .division-table td.team{ color:var(--orange-deep); font-weight:600; }
+  .division-table td.unk{ color:var(--ink-faint); }
+  .division-wrap{
+    background:var(--white); border:1px solid var(--line); border-radius:var(--radius);
+    padding:8px 24px; overflow-x:auto;
+  }
+
+  .how-steps{
+    counter-reset:stepnum;
+    display:grid; grid-template-columns:1fr 1fr; gap:0 48px;
+    margin-top:10px;
+  }
+  .how-step{
+    counter-increment:stepnum;
+    padding:22px 0; border-bottom:1px solid var(--line);
+    display:grid; grid-template-columns:30px 1fr; gap:14px;
+  }
+  .how-step::before{
+    content:counter(stepnum,decimal-leading-zero);
+    font-family:'IBM Plex Mono',monospace; color:var(--orange); font-weight:600; font-size:13px;
+  }
+  .how-step h4{ font-size:14.5px; font-weight:700; margin-bottom:5px; }
+  .how-step p{ font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+
+  .bypass-note{
+    margin-top:56px; display:grid; grid-template-columns:1.3fr 0.7fr; gap:40px; align-items:center;
+    background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:36px;
+  }
+  .bypass-note .exhibit-frame{ max-width:230px; margin:0 auto; }
+  .flow-chart{
+    background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:20px;
+  }
+  .flow-chart svg{ width:100%; height:auto; display:block; }
+  .bypass-diagram{ background:var(--paper-deep); border:1px solid var(--line); border-radius:var(--radius); padding:14px; }
+  .bypass-diagram svg{ width:100%; height:auto; display:block; }
+  .bypass-note h3{ font-size:22px; margin-bottom:10px; font-family:'IBM Plex Sans',sans-serif; font-weight:700; color:var(--ink);}
+  .bypass-note p{ color:var(--ink-soft); font-size:14.5px; line-height:1.7; }
+
+  .pull-quote{
+    text-align:center; padding:90px 0 80px; background:var(--blue-deep); color:#fff; position:relative;
+  }
+  .pull-quote h2{
+    color:#fff; font-size:clamp(34px,4.6vw,58px); max-width:880px; margin:0 auto 18px; line-height:1.05;
+  }
+  .pull-quote h2 em{ font-style:normal; color:var(--orange); }
+  .pull-quote p{ color:#A9C0D2; max-width:560px; margin:0 auto; font-size:15.5px; line-height:1.7; }
+
+  /* ============ CTA ============ */
+  .cta{ padding:90px 0; text-align:center; }
+  .cta .eyebrow{ justify-content:center; }
+  .cta h2{ font-size:clamp(30px,3.8vw,46px); margin:16px 0 14px; }
+  .cta p{ color:var(--ink-soft); max-width:520px; margin:0 auto 32px; font-size:15.5px; }
+  .cta-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .cta-fine{ margin-top:22px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-faint); }
+
+  /* ============ FOOTER ============ */
+  footer{ border-top:1px solid var(--line); padding:36px 0; }
+  .foot-inner{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  .foot-brand{ display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-soft); }
+  .foot-brand img{ height:18px; }
+  .foot-brand .wordmark{ font-family:'Big Shoulders Display',sans-serif; font-weight:800; font-size:15px; color:var(--orange); margin-right:2px;}
+  .foot-links{ display:flex; gap:22px; list-style:none; }
+  .foot-links a{ font-size:13px; color:var(--ink-soft); }
+  .foot-links a:hover{ color:var(--blue-deep); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width:900px){
+    .nav-links{ display:none; }
+    .hero-grid{ grid-template-columns:1fr; }
+    .stat-row{ grid-template-columns:1fr 1fr; }
+    .stat{ border-bottom:1px solid rgba(255,255,255,0.16); padding-bottom:20px; }
+    .feat-grid{ grid-template-columns:1fr; }
+    .showcase{ grid-template-columns:1fr; }
+    .scoring-grid{ grid-template-columns:1fr; gap:36px; }
+    .how-steps{ grid-template-columns:1fr; }
+    .bypass-note{ grid-template-columns:1fr; }
+    .division-wrap{ font-size:13px; }
+    .funnel-block{ padding:18px 14px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ NAV ============ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo"><img src="assets/logo-icon.png" alt="Closr"><span class="wordmark">CLOSR</span></a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#scoring">Scoring</a></li>
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="privacy_policy.html">Privacy</a></li>
+      </ul>
+      <a href="#contact" class="nav-cta">Get Access</a>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero grid-bg">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <h1>Built like an<br>engine. Run<br>like a <em>team</em>.</h1>
+          <p class="hero-sub">Closr scores every lead the moment it lands, matches it to the right listing, and keeps a complete record of every conversation — so nothing slips through. And when you'd rather not run it yourself, our concierge team runs it for you.</p>
+          <div class="hero-actions">
+            <a href="#contact" class="btn btn-primary">Request Early Access</a>
+            <a href="#features" class="btn btn-ghost">See the platform</a>
+          </div>
+          <div class="hero-chips">
+            <span class="chip">LPMAMA LEAD SCORING</span>
+            <span class="chip">9-STAGE PIPELINE</span>
+            <span class="chip">CONCIERGE-OPERATED</span>
+            <span class="chip">BUILT IN NEPAL</span>
+          </div>
+        </div>
+        <div class="hero-exhibit">
+          <svg viewBox="0 0 620 480" xmlns="http://www.w3.org/2000/svg">
+            <!-- connector spine -->
+            <line x1="310" y1="60" x2="310" y2="420" stroke="#DCE2E8" stroke-width="1.5" stroke-dasharray="3 4"/>
+            <!-- Band: Unified Output (top) -->
+            <polygon points="120,60 400,60 376,120 96,120" fill="#E7F1FA" stroke="#1D7FC3" stroke-width="2"/>
+            <text x="238" y="95" text-anchor="middle" font-family="Big Shoulders Display, sans-serif" font-weight="800" font-size="20" fill="#123A56" letter-spacing="0.5">UNIFIED OUTPUT</text>
+            <line x1="376" y1="90" x2="470" y2="74" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="78" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">AWS SES</text>
+            <line x1="370" y1="105" x2="470" y2="105" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="109" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">Flutter mobile app</text>
+            <line x1="350" y1="118" x2="470" y2="136" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="140" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">Next.js web dashboard</text>
+
+            <!-- Band: Scoring Engine (middle) -->
+            <polygon points="96,180 376,180 352,240 72,240" fill="#FFF1DF" stroke="#FF8800" stroke-width="2"/>
+            <text x="214" y="215" text-anchor="middle" font-family="Big Shoulders Display, sans-serif" font-weight="800" font-size="20" fill="#123A56" letter-spacing="0.5">SCORING ENGINE</text>
+            <line x1="352" y1="205" x2="470" y2="195" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="199" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">Algorithm</text>
+            <line x1="330" y1="232" x2="470" y2="232" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="236" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">Ranking</text>
+
+            <!-- Band: Data Intake (bottom) -->
+            <polygon points="72,300 352,300 328,360 48,360" fill="#FFFFFF" stroke="#16212C" stroke-width="2"/>
+            <text x="190" y="335" text-anchor="middle" font-family="Big Shoulders Display, sans-serif" font-weight="800" font-size="20" fill="#123A56" letter-spacing="0.5">DATA INTAKE</text>
+            <line x1="328" y1="325" x2="470" y2="312" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="316" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">Raw streams</text>
+            <line x1="305" y1="352" x2="470" y2="352" stroke="#9FB4C4" stroke-width="1.5"/>
+            <text x="476" y="356" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675">APIs</text>
+
+            <!-- connecting arrows between bands (flow moves upward: intake → scoring → output) -->
+            <path d="M234 168 L234 130" stroke="#16212C" stroke-width="2" fill="none"/>
+            <path d="M234 130 L227 140 M234 130 L241 140" stroke="#16212C" stroke-width="2" fill="none"/>
+            <path d="M210 288 L210 250" stroke="#16212C" stroke-width="2" fill="none"/>
+            <path d="M210 250 L203 260 M210 250 L217 260" stroke="#16212C" stroke-width="2" fill="none"/>
+
+            <text x="48" y="40" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="2" fill="#93A0AC">BUILT IN KATHMANDU — MULTI-TENANT, PURPOSE-BUILT CRM</text>
+          </svg>
+          <div class="exhibit-cap" style="border-top:1px dashed var(--line);padding:10px 4px 0;"><span><b>FIG. 01</b> — The Closr Engine</span><span>INTAKE → SCORE → OUTPUT</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ PROBLEM STRIP ============ -->
+  <section class="problem">
+    <div class="wrap">
+      <div class="eyebrow">THE INDEPENDENT AGENT'S DILEMMA</div>
+      <h2>Most mid-tier producers have no systematic way to track who's actually ready to transact.</h2>
+      <p class="problem-sub">We surveyed independent agents and small teams to find out where their pipeline actually breaks. Four points of failure showed up consistently.</p>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-num">53%</div>
+          <div class="stat-label">Unqualified — time wasted on browsers, not buyers</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">41%</div>
+          <div class="stat-label">Cold drops — leads go cold before proper follow-up</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">41%</div>
+          <div class="stat-label">Slow response — general delays in initial contact</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">29%</div>
+          <div class="stat-label">Manual entry — hours lost typing into notebooks</div>
+        </div>
+      </div>
+      <div class="stat-note"><b>NOTE —</b> 35% of surveyed agents operate entirely without a CRM today.</div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="block alt" id="features">
+    <div class="wrap">
+      <div class="block-head">
+        <div class="eyebrow">PLATFORM</div>
+        <h2>Nobody asked for a fancier dashboard.</h2>
+        <p>They asked for automated follow-ups, instant qualification, and the administrative busywork to disappear entirely. That's what the engine underneath Closr is built to do.</p>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="15" stroke="#1D7FC3" stroke-width="2"/><circle cx="18" cy="18" r="9" stroke="#FF8800" stroke-width="2"/><circle cx="18" cy="18" r="3" fill="#FF8800"/></svg>
+          </div>
+          <h3>Heat Score</h3>
+          <p>Every lead gets a live 0–100 score across six LPMAMA dimensions. Explainable, not a black box — and tunable as we learn what predicts a close.</p>
+          <span class="feat-tag">RULES-BASED · LIVE</span>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="13" height="13" stroke="#1D7FC3" stroke-width="2"/><rect x="19" y="19" width="13" height="13" stroke="#FF8800" stroke-width="2"/><path d="M17 17L19 19" stroke="#16212C" stroke-width="2"/></svg>
+          </div>
+          <h3>Property Matching</h3>
+          <p>Listings are continuously ranked against each lead's budget, location, and bedroom requirements — the best fits surface automatically.</p>
+          <span class="feat-tag">ALGORITHMIC</span>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><path d="M5 9H31M5 18H31M5 27H22" stroke="#1D7FC3" stroke-width="2"/><circle cx="31" cy="27" r="3" fill="#FF8800"/></svg>
+          </div>
+          <h3>Unified Timeline</h3>
+          <p>Every email, call log, note, and showing in one chronological thread per lead — no digging through an inbox to find where things stand.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="4" y="6" width="28" height="24" rx="1" stroke="#1D7FC3" stroke-width="2"/><path d="M4 13H32" stroke="#1D7FC3" stroke-width="2"/><path d="M10 3V8M26 3V8" stroke="#FF8800" stroke-width="2"/><circle cx="14" cy="20" r="2" fill="#FF8800"/></svg>
+          </div>
+          <h3>Calendar Sync</h3>
+          <p>Showings book straight to Google Calendar — event creation, lead invites, and 24-hour / 1-hour reminders handled automatically.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="7" cy="18" r="4" stroke="#1D7FC3" stroke-width="2"/><circle cx="18" cy="18" r="4" stroke="#FF8800" stroke-width="2"/><circle cx="29" cy="18" r="4" stroke="#1D7FC3" stroke-width="2"/><path d="M11 18H14M22 18H25" stroke="#16212C" stroke-width="1.5" stroke-dasharray="2 2"/></svg>
+          </div>
+          <h3>Pipeline Tracking</h3>
+          <p>A defined nine-stage pipeline with full history retained at every step — see exactly where every lead stands, today.</p>
+          <span class="feat-tag">SEE PIPELINE ↓</span>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="5" y="5" width="26" height="26" stroke="#1D7FC3" stroke-width="2"/><rect x="11" y="11" width="14" height="14" stroke="#FF8800" stroke-width="2"/></svg>
+          </div>
+          <h3>Team &amp; Multi-Tenant</h3>
+          <p>Works as a personal tool for a solo agent and scales to a full team — admins see firm-wide pipeline, agents see their own.</p>
+        </div>
+      </div>
+
+      <div class="funnel-block">
+        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- input tags -->
+          <g font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600">
+            <rect x="40" y="18" width="92" height="30" rx="15" fill="#E7F1FA" stroke="#1D7FC3"/>
+            <text x="86" y="38" text-anchor="middle" fill="#123A56">Budget</text>
+            <rect x="150" y="40" width="100" height="30" rx="15" fill="#FFF1DF" stroke="#FF8800"/>
+            <text x="200" y="60" text-anchor="middle" fill="#7A4A00">Location</text>
+            <rect x="266" y="18" width="78" height="30" rx="15" fill="#E7F1FA" stroke="#1D7FC3"/>
+            <text x="305" y="38" text-anchor="middle" fill="#123A56">Beds</text>
+          </g>
+          <line x1="100" y1="48" x2="170" y2="88" stroke="#9FB4C4" stroke-width="1.5"/>
+          <line x1="200" y1="70" x2="205" y2="88" stroke="#9FB4C4" stroke-width="1.5"/>
+          <line x1="295" y1="48" x2="245" y2="88" stroke="#9FB4C4" stroke-width="1.5"/>
+
+          <!-- funnel -->
+          <polygon points="110,90 300,90 250,160 165,160" fill="#FFFFFF" stroke="#123A56" stroke-width="2.5"/>
+          <polygon points="165,160 250,160 222,200 192,200" fill="#FFFFFF" stroke="#123A56" stroke-width="2.5"/>
+          <circle cx="178" cy="128" r="14" fill="none" stroke="#FF8800" stroke-width="2"/>
+          <circle cx="178" cy="128" r="3" fill="#FF8800"/>
+          <circle cx="207" cy="142" r="9" fill="none" stroke="#1D7FC3" stroke-width="2"/>
+          <circle cx="207" cy="142" r="2" fill="#1D7FC3"/>
+
+          <line x1="207" y1="200" x2="207" y2="222" stroke="#16212C" stroke-width="2"/>
+          <path d="M207 222 L200 212 M207 222 L214 212" stroke="#16212C" stroke-width="2" fill="none"/>
+
+          <!-- output ranked list -->
+          <g transform="translate(420,30)">
+            <text x="0" y="0" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="2" fill="#93A0AC">RANKED MATCHES</text>
+            <g font-family="IBM Plex Sans, sans-serif" font-size="14">
+              <rect x="0" y="14" width="420" height="46" rx="4" fill="#FFFFFF" stroke="#DCE2E8"/>
+              <text x="16" y="42" fill="#16212C" font-weight="600">42 Oak Street — $410,000</text>
+              <path d="M392 37 L398 43 L410 28" stroke="#FF8800" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+              <rect x="0" y="68" width="420" height="46" rx="4" fill="#FFFFFF" stroke="#DCE2E8"/>
+              <text x="16" y="96" fill="#16212C" font-weight="600">118 Cedar Lane — $395,000</text>
+              <path d="M392 91 L398 97 L410 82" stroke="#FF8800" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+              <rect x="0" y="122" width="420" height="46" rx="4" fill="#FFFFFF" stroke="#DCE2E8"/>
+              <text x="16" y="150" fill="#16212C" font-weight="600">7 Birchwood Ct — $429,500</text>
+              <path d="M392 145 L398 151 L410 136" stroke="#FF8800" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+          </g>
+          <line x1="252" y1="180" x2="412" y2="100" stroke="#DCE2E8" stroke-width="1.5" stroke-dasharray="3 4"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCORING ============ -->
+  <section class="block" id="scoring">
+    <div class="wrap">
+      <div class="block-head">
+        <div class="eyebrow">SCORING ENGINE</div>
+        <h2>Real-time LPMAMA<br>lead scoring.</h2>
+        <p>Six qualification dimensions, drawn from the real estate industry's standard LPMAMA framework, evaluated continuously and rolled into one live score.</p>
+      </div>
+
+      <div class="scoring-grid">
+        <div>
+          <div class="dim-list">
+            <div class="dim-row"><div class="dim-letter">L</div><div><h4>Location</h4><p>Specific neighborhood preference, or open to anything — certainty scores higher.</p></div></div>
+            <div class="dim-row"><div class="dim-letter">P</div><div><h4>Price</h4><p>A narrow, certain budget scores far higher than a wide, unsure one.</p></div></div>
+            <div class="dim-row"><div class="dim-letter">M</div><div><h4>Motivation</h4><p>Relocating next month, or casually browsing — urgency is one of the strongest signals.</p></div></div>
+            <div class="dim-row"><div class="dim-letter">A</div><div><h4>Agent status</h4><p>Already working with another agent, or a real open opportunity.</p></div></div>
+            <div class="dim-row"><div class="dim-letter">M</div><div><h4>Mortgage</h4><p>Cash buyer or pre-approved moves fast; not-yet-started weighs heavily the other way.</p></div></div>
+            <div class="dim-row"><div class="dim-letter">A</div><div><h4>Appointment</h4><p>A booked viewing is the single strongest signal in the score.</p></div></div>
+          </div>
+
+          <div class="tier-scale">
+            <div class="tier-bar">
+              <div class="tier-seg tier-cold"></div><div class="tier-seg tier-cool"></div><div class="tier-seg tier-warm"></div><div class="tier-seg tier-hot"></div>
+            </div>
+            <div class="tier-labels">
+              <span><b>Cold</b>0–24</span>
+              <span><b>Cool</b>25–49</span>
+              <span><b>Warm</b>50–74</span>
+              <span><b>Hot</b>75–100</span>
+            </div>
+          </div>
+          <div class="scoring-note">This is a live, explainable, rules-based algorithm — not a generative-AI guess. Every score comes with a reason for each dimension, and the weights are tunable as we learn what actually predicts a close in your market.</div>
+        </div>
+
+        <div>
+          <svg viewBox="-60 0 680 480" xmlns="http://www.w3.org/2000/svg">
+            <!-- grid rings -->
+            <polygon points="280,118 397.5,194 397.5,308.5 280,403 162.5,308.5 162.5,194" fill="none" stroke="#DCE2E8" stroke-width="1"/>
+            <polygon points="280,165 351.25,212 351.25,288 280,318.5 208.75,288 208.75,212" fill="none" stroke="#DCE2E8" stroke-width="1"/>
+            <polygon points="280,212 304.75,228 304.75,265 280,281 255.25,265 255.25,228" fill="none" stroke="#DCE2E8" stroke-width="1"/>
+            <!-- axes -->
+            <g stroke="#DCE2E8" stroke-width="1">
+              <line x1="280" y1="260" x2="280" y2="70"/>
+              <line x1="280" y1="260" x2="444.5" y2="165"/>
+              <line x1="280" y1="260" x2="444.5" y2="355"/>
+              <line x1="280" y1="260" x2="280" y2="450"/>
+              <line x1="280" y1="260" x2="115.5" y2="355"/>
+              <line x1="280" y1="260" x2="115.5" y2="165"/>
+            </g>
+            <!-- cold polygon -->
+            <polygon points="280,218.2 309.6,242.9 304.7,274.2 280,307.5 260.3,271.4 263.5,250.5" fill="#CBD6DF" fill-opacity="0.5" stroke="#93A0AC" stroke-width="1.5"/>
+            <!-- hot polygon -->
+            <polygon points="280,85.2 419.9,179.2 436.3,350.2 280,364.5 135.2,343.6 148.4,184.0" fill="#FF8800" fill-opacity="0.22" stroke="#FF8800" stroke-width="2.5"/>
+            <circle cx="280" cy="85.2" r="3.5" fill="#FF8800"/>
+            <circle cx="419.9" cy="179.2" r="3.5" fill="#FF8800"/>
+            <circle cx="436.3" cy="350.2" r="3.5" fill="#FF8800"/>
+            <circle cx="280" cy="364.5" r="3.5" fill="#FF8800"/>
+            <circle cx="135.2" cy="343.6" r="3.5" fill="#FF8800"/>
+            <circle cx="148.4" cy="184.0" r="3.5" fill="#FF8800"/>
+
+            <!-- axis labels -->
+            <g font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="#123A56">
+              <text x="280" y="46" text-anchor="middle">LOCATION</text>
+              <text x="479" y="141" text-anchor="start">BUDGET</text>
+              <text x="479" y="380" text-anchor="start">MOTIVATION</text>
+              <text x="280" y="478" text-anchor="middle">AGENT</text>
+              <text x="81" y="380" text-anchor="end">MORTGAGE</text>
+              <text x="81" y="141" text-anchor="end">APPOINTMENT</text>
+            </g>
+
+            <text x="280" y="263" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#93A0AC">COLD</text>
+
+            <g font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">
+              <rect x="20" y="430" width="100" height="26" rx="13" fill="#FFF1DF"/>
+              <text x="70" y="447" text-anchor="middle" fill="#C96600">HOT 75+</text>
+            </g>
+          </svg>
+          <div class="exhibit-cap" style="border-top:1px dashed var(--line);padding-top:10px;justify-content:center;"><span><b>FIG. 02</b> — A hot lead across six dimensions</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PIPELINE ============ -->
+  <section class="block alt" id="pipeline">
+    <div class="wrap">
+      <div class="block-head">
+        <div class="eyebrow">PIPELINE</div>
+        <h2>A clear path from<br>inquiry to close.</h2>
+        <p>Every lead moves through a defined nine-stage pipeline, with full history retained at every single stage. Nothing gets lost, nothing goes stale.</p>
+      </div>
+
+      <div class="track">
+        <div class="track-node"><div class="track-dot"></div><div class="track-num">01</div><div class="track-label">New</div></div>
+        <div class="track-node"><div class="track-dot"></div><div class="track-num">02</div><div class="track-label">Contacted</div></div>
+        <div class="track-node"><div class="track-dot"></div><div class="track-num">03</div><div class="track-label">Engaged</div></div>
+        <div class="track-node"><div class="track-dot"></div><div class="track-num">04</div><div class="track-label">Qualified</div></div>
+        <div class="track-node"><div class="track-dot"></div><div class="track-num">05</div><div class="track-label">Showing</div></div>
+        <div class="track-node"><div class="track-dot"></div><div class="track-num">06</div><div class="track-label">Negotiating</div></div>
+        <div class="track-node is-end"><div class="track-dot"></div><div class="track-num">07</div><div class="track-label">Converted</div></div>
+      </div>
+      <div class="track-exits">
+        <div class="exit-tag">Lost — exits the active pipeline, history retained</div>
+        <div class="exit-tag">Archived — closed out, fully searchable later</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS / CONCIERGE ============ -->
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="concierge-intro">
+        <div class="eyebrow" style="justify-content:center;">HOW IT WORKS</div>
+        <h2>You don't get a login.<br>You get a <em style="font-style:normal;color:#FF8800;">team</em>.</h2>
+        <p style="color:var(--ink-soft);font-size:15.5px;margin-top:14px;">We don't hand you software and ask you to operate it. A dedicated Husig concierge team manages the CRM, your property listings, and lead follow-up — using Closr internally — so you get an organized, scored pipeline without doing the data entry.</p>
+      </div>
+
+      <!-- Concierge Model diagram -->
+      <div class="concierge-diagram">
+        <svg viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <path id="ringtext" d="M 98.7 263.3 A 192 192 0 0 1 481.3 263.3" fill="none"/>
+          </defs>
+          <!-- outer ring -->
+          <circle cx="290" cy="280" r="190" fill="none" stroke="#FF8800" stroke-width="64" opacity="0.92"/>
+          <circle cx="290" cy="280" r="222" fill="none" stroke="#FF8800" stroke-width="1"/>
+          <circle cx="290" cy="280" r="158" fill="none" stroke="#FF8800" stroke-width="1"/>
+          <!-- ring label -->
+          <text font-family="IBM Plex Mono, monospace" font-size="14.5" font-weight="600" letter-spacing="1.5" fill="#FFFFFF">
+            <textPath href="#ringtext" startOffset="50%" text-anchor="middle">HUSIG CONCIERGE TEAM</textPath>
+          </text>
+          <!-- inner circle -->
+          <circle cx="290" cy="280" r="140" fill="#F6F7F9" stroke="#1D7FC3" stroke-width="4"/>
+          <text x="290" y="262" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="2" fill="#5B6675">THE ENGINE</text>
+          <text x="290" y="294" text-anchor="middle" font-family="Big Shoulders Display, sans-serif" font-weight="800" font-size="27" fill="#123A56">CLOSR TECH STACK</text>
+          <text x="290" y="320" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13.5" fill="#5B6675">Scoring · Matching · Pipeline</text>
+          <!-- arrow to agent -->
+          <line x1="512" y1="280" x2="610" y2="280" stroke="#16212C" stroke-width="2"/>
+          <path d="M610 280 L596 271 L596 289 Z" fill="#16212C"/>
+          <!-- agent icon -->
+          <circle cx="660" cy="255" r="22" fill="none" stroke="#123A56" stroke-width="3"/>
+          <path d="M620 332 C 620 295, 700 295, 700 332" fill="none" stroke="#123A56" stroke-width="3" stroke-linecap="round"/>
+          <text x="660" y="378" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="1.5" fill="#123A56" font-weight="600">REAL ESTATE</text>
+          <text x="660" y="396" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="1.5" fill="#123A56" font-weight="600">AGENT</text>
+        </svg>
+      </div>
+
+      <!-- Division of labor table -->
+      <div style="max-width:880px;margin:64px auto 0;">
+        <h3 style="font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:19px;color:var(--ink);margin-bottom:6px;">The new division of labor</h3>
+        <p style="color:var(--ink-soft);font-size:14.5px;margin-bottom:22px;max-width:600px;">The concierge team executes the busywork. You approve, and you show up to the properties. You retain control over what actually gets sent.</p>
+        <div class="division-wrap">
+          <table class="division-table">
+            <thead><tr><th>Task</th><th>Standard CRM</th><th>Self-serve AI</th><th>Closr Concierge</th></tr></thead>
+            <tbody>
+              <tr><td>Data entry</td><td class="unk">Agent</td><td class="unk">?</td><td class="team">Concierge Team</td></tr>
+              <tr><td>Lead scoring</td><td class="unk">Agent</td><td class="unk">?</td><td class="team">Concierge Team</td></tr>
+              <tr><td>Drafting replies</td><td class="unk">Agent</td><td class="unk">?</td><td class="team">Concierge Team</td></tr>
+              <tr><td>Approving &amp; sending</td><td class="unk">Agent</td><td class="unk">?</td><td class="yes">Agent</td></tr>
+              <tr><td>Showings</td><td class="unk">Agent</td><td class="unk">?</td><td class="yes">Agent</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Step flow + exhibit -->
+      <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:48px;margin-top:72px;align-items:start;" class="how-flow-grid">
+        <div>
+          <h3 style="font-family:'IBM Plex Sans',sans-serif;font-weight:700;font-size:19px;color:var(--ink);margin-bottom:18px;">A lead's first hour, day one</h3>
+          <div class="how-steps" style="grid-template-columns:1fr;">
+            <div class="how-step"><div><h4>Lead lands, from wherever it came from</h4><p>Email, social, a referral text, an open house — the concierge team logs it the moment it arrives.</p></div></div>
+            <div class="how-step"><div><h4>Heat Score runs automatically</h4><p>The lead is scored and tiered the instant it's entered — Hot, Warm, Cool, or Cold.</p></div></div>
+            <div class="how-step"><div><h4>First reply is drafted, not sent</h4><p>The concierge team prepares a personalized response. Nothing goes out without sign-off.</p></div></div>
+            <div class="how-step"><div><h4>You approve, from your own identity</h4><p>One tap to approve, edit, or rewrite — it always sends as you, never as us.</p></div></div>
+          </div>
+        </div>
+        <div class="flow-chart">
+          <svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="70" cy="180" r="58" fill="#F6F7F9" stroke="#123A56" stroke-width="2.5"/>
+            <text x="70" y="172" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="13" fill="#123A56">LEAD</text>
+            <text x="70" y="190" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="13" fill="#123A56">ENTERS</text>
+
+            <path d="M128 165 L210 95" stroke="#9FB4C4" stroke-width="1.5" fill="none"/>
+            <path d="M128 195 L210 255" stroke="#9FB4C4" stroke-width="1.5" fill="none"/>
+
+            <rect x="212" y="62" width="250" height="66" rx="4" fill="#E7F1FA" stroke="#1D7FC3" stroke-width="2"/>
+            <text x="232" y="90" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="13.5" fill="#123A56">Scoring &amp; Matching</text>
+            <text x="232" y="108" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5B6675">Algorithmic</text>
+            <path d="M425 80 L434 89 L450 68" stroke="#1D7FC3" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <rect x="212" y="222" width="250" height="66" rx="4" fill="#FDEAEA" stroke="#C2493B" stroke-width="2"/>
+            <text x="232" y="250" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="13.5" fill="#7A2418">Auto-Drafting Replies</text>
+            <text x="232" y="268" font-family="IBM Plex Mono, monospace" font-size="11" fill="#9B5347">Generative AI</text>
+            <path d="M425 232 L450 257 M450 232 L425 257" stroke="#C2493B" stroke-width="2.5" stroke-linecap="round"/>
+
+            <path d="M462 255 Q472 290 420 305" stroke="#9FB4C4" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>
+            <text x="280" y="332" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5B6675" font-style="italic">→ requires human polish</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Bypass note -->
+      <div class="bypass-note">
+        <div>
+          <h3>No certification queue to wait behind.</h3>
+          <p>Major portal integrations take months of vendor certification — and some platforms decline the application entirely. Because Closr includes a human concierge team, we pull leads from any source into your pipeline on day one, regardless of where they actually land.</p>
+        </div>
+        <div class="bypass-diagram">
+          <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- new lead icon -->
+            <rect x="10" y="190" width="56" height="46" rx="4" fill="#FFFFFF" stroke="#1D7FC3" stroke-width="2"/>
+            <circle cx="38" cy="208" r="7" fill="none" stroke="#1D7FC3" stroke-width="1.6"/>
+            <line x1="22" y1="224" x2="54" y2="224" stroke="#1D7FC3" stroke-width="1.6"/>
+            <text x="38" y="252" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#5B6675">NEW LEAD</text>
+
+            <!-- wall -->
+            <g>
+              <rect x="118" y="60" width="84" height="176" fill="#E9ECF0" stroke="#5B6675" stroke-width="1.5"/>
+              <g stroke="#C5CCD3" stroke-width="1">
+                <line x1="118" y1="84" x2="202" y2="84"/><line x1="118" y1="108" x2="202" y2="108"/>
+                <line x1="118" y1="132" x2="202" y2="132"/><line x1="118" y1="156" x2="202" y2="156"/>
+                <line x1="118" y1="180" x2="202" y2="180"/><line x1="118" y1="204" x2="202" y2="204"/>
+                <line x1="142" y1="60" x2="142" y2="84"/><line x1="178" y1="84" x2="178" y2="108"/>
+                <line x1="142" y1="108" x2="142" y2="132"/><line x1="178" y1="132" x2="178" y2="156"/>
+                <line x1="142" y1="156" x2="142" y2="180"/><line x1="178" y1="180" x2="178" y2="204"/>
+                <line x1="142" y1="204" x2="142" y2="236"/>
+              </g>
+            </g>
+            <text x="160" y="148" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="#3D4750">API</text>
+            <text x="160" y="162" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" font-weight="600" fill="#3D4750">CERT.</text>
+            <text x="160" y="176" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9" fill="#5B6675">(MONTHS)</text>
+
+            <!-- bypass arc -->
+            <path d="M50 188 C 90 30, 230 30, 270 188" fill="none" stroke="#FF8800" stroke-width="2.5" stroke-dasharray="1 0"/>
+            <path d="M270 188 L260 178 M270 188 L257 192" stroke="#FF8800" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <text x="160" y="38" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="#C96600" letter-spacing="1">CONCIERGE BYPASS</text>
+
+            <!-- engine cylinder -->
+            <g>
+              <path d="M256 200 a26 9 0 1 0 52 0 a26 9 0 1 0 -52 0" fill="#FFFFFF" stroke="#123A56" stroke-width="2"/>
+              <path d="M256 200 v28 a26 9 0 0 0 52 0 v-28" fill="#FFFFFF" stroke="#123A56" stroke-width="2"/>
+              <path d="M256 200 a26 9 0 1 0 52 0" fill="none" stroke="#123A56" stroke-width="2"/>
+            </g>
+            <text x="282" y="250" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#5B6675">CLOSR</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PULL QUOTE ============ -->
+  <section class="pull-quote">
+    <div class="wrap">
+      <h2>You own the<br>relationship. <em>We</em><br>run the engine.</h2>
+      <p>Closr marries a purpose-built scoring and pipeline engine with the human judgment real estate demands. No platform certifications to wait on. No software to learn.</p>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta" id="contact">
+    <div class="wrap">
+      <div class="eyebrow">EARLY ACCESS</div>
+      <h2>Currently piloting with a small group of agents.</h2>
+      <p>Closr is in early, hands-on pilots — minimal pricing, no long-term commitment. We're looking for a few more independent agents and small teams to work with directly.</p>
+      <div class="cta-actions">
+        <a href="mailto:hello@husig.ai" class="btn btn-primary">Request Early Access</a>
+        <a href="https://husig.ai" target="_blank" class="btn btn-ghost">Learn about Husig</a>
+      </div>
+      <div class="cta-fine">hello@husig.ai · Kathmandu, Nepal</div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-brand"><img src="assets/logo-icon.png" alt="Closr"><span class="wordmark">CLOSR</span>© 2026 Husig — Closr. Built in Nepal, for real estate teams everywhere.</div>
+      <ul class="foot-links">
+        <li><a href="privacy_policy.html">Privacy Policy</a></li>
+        <li><a href="mailto:hello@husig.ai">Contact</a></li>
+        <li><a href="https://husig.ai" target="_blank">husig.ai</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</body>
+</html>
